@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="white">#ffffff</color><!--白色 -->
+    <color name="gray">#ff434c5d</color><!--说明类字体用灰色 -->
+    <color name="red">#ffd93333</color><!--红色 -->
+    <color name="black">#000000</color><!--黑色 -->
+    <color name="yellow">#fff5b800</color><!--黄色 -->
+</resources>

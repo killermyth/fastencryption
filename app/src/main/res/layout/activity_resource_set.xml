@@ -1,0 +1,104 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.lvyingbin.fastencryption.activity.ImgPrivacyActivity">
+
+    <GridView
+        android:id="@+id/item_grid"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="2.0dip"
+        android:clipToPadding="false"
+        android:fadingEdge="none"
+        android:horizontalSpacing="2.0dip"
+        android:listSelector="@null"
+        android:numColumns="3"
+        android:verticalSpacing="2.0dip" />
+
+    <RelativeLayout
+        android:id="@+id/layout_btnInsert"
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="56.0dip"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentBottom="true"
+        android:background="@color/black">
+
+        <Button
+            android:id="@+id/btn_AddMedia"
+            android:layout_width="wrap_content"
+            android:layout_height="37.0dip"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:layout_weight="1.0"
+            android:paddingLeft="44.0dip"
+            android:paddingRight="44.0dip"
+            android:text="添加新资源"
+            android:textColor="@color/black"
+            android:textSize="17.0dip"
+            android:background="@color/white"/>
+
+        <LinearLayout
+            android:id="@+id/layout_second"
+            android:layout_width="fill_parent"
+            android:layout_height="38.0dip"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:paddingLeft="30.0dip"
+            android:paddingRight="30.0dip">
+
+            <Button
+                android:id="@+id/btn_delete"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1.0"
+                android:drawableLeft="@drawable/delete"
+                android:paddingLeft="10.0dip"
+                android:text="@string/delete"
+                android:textSize="17.0dip"
+                android:background="@color/white"/>
+
+            <ImageView
+                android:background="@drawable/line_in_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <Button
+                android:id="@+id/btn_selectAll"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1.0"
+                android:drawableLeft="@drawable/select_all"
+                android:paddingLeft="10.0dip"
+                android:text="@string/selectAll"
+                android:textSize="17.0dip"
+                android:background="@color/white"/>
+
+            <ImageView
+                android:background="@drawable/line_in_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <Button
+                android:id="@+id/btn_restore"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1.0"
+                android:drawableLeft="@drawable/restore"
+                android:paddingLeft="10.0dip"
+                android:text="@string/restore"
+                android:textSize="17.0dip"
+                android:background="@color/white"/>
+        </LinearLayout>
+    </RelativeLayout>
+
+</RelativeLayout>
