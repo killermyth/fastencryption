@@ -61,57 +61,7 @@ public class MonitorService extends Service implements IMonitorService{
     }
 
     public void startMonitor(){
-        AsyncTask<Void, Void, Void> taskMonitor = new AsyncTask<Void, Void, Void>(){
-            Set<String> lockAppSet;
-            String appHit = "";
-            Boolean appLockFlag;
-            @Override
-            protected void onPreExecute(){
-                super.onPreExecute();
-                lockAppSet = accessToken.getStrSetSharedPreferences("lockApp");
-                appLockFlag = accessToken.getBoolSharedPreferences("appLockFlag");
-            }
-
-            @Override
-            protected Void doInBackground(Void... params) {
-                Log.e(LOG_TAG,"appLockFlag:"+appLockFlag);
-                if(appLockFlag){
-                    if(!lockAppSet.isEmpty()){
-                        isMonitorStarted = true;
-                        Log.e(LOG_TAG, "monitor started");
-                        stop = false;
-                        while(!stop) {
-                            try{
-                                ActivityManager.RunningTaskInfo taskInfo = ActivityUtil.getForegroundActivity(mContext);
-                                if(!taskInfo.topActivity.getPackageName().equals("com.lvyingbin.fastencryption")){
-                                    if(lockAppSet.contains(taskInfo.topActivity.getPackageName())){
-                                        Log.e(LOG_TAG,"bingo");
-                                        if(!appHit.equals(taskInfo.topActivity.getPackageName())){
-                                            Log.e(LOG_TAG,"appHit"+appHit);
-                                            appHit = taskInfo.topActivity.getPackageName();
-                                            Intent intent = new Intent(mContext,LockScreenActivity.class);
-                                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                            intent.putExtra("activityGoal","unlock app");
-                                            startActivity(intent);
-                                        }
-                                    }else{
-                                        appHit = "";
-                                    }
-                                }
-                                Log.e(LOG_TAG,taskInfo.topActivity.getPackageName());
-                                Thread.sleep(2000);
-                            }catch (Exception e) {
-                                Log.e(LOG_TAG, "Exception : " + e);
-                            }
-                        }
-                        Log.e(LOG_TAG, "monitor stopped");
-                        isMonitorStarted = false;
-                    }
-                }
-                return null;
-    }
-};
-        taskMonitor.execute();
+        new MonitorThread().start();
     }
 
     public void stopMonitor(){
@@ -133,6 +83,53 @@ public class MonitorService extends Service implements IMonitorService{
             }else if (intent.getAction().equals(Intent.ACTION_SCREEN_ON)) {
                 Log.e(LOG_TAG, "screenOnOffReceiver start monitor");
                 startMonitor();
+            }
+        }
+    }
+
+    /**
+     * app监测线程
+     */
+    public class MonitorThread extends Thread {
+        public void run() {
+            Set<String> lockAppSet;
+            String appHit = "";
+            Boolean appLockFlag;
+            lockAppSet = accessToken.getStrSetSharedPreferences("lockApp");
+            appLockFlag = accessToken.getBoolSharedPreferences("appLockFlag");
+            Log.e(LOG_TAG,"appLockFlag:"+appLockFlag);
+            if(appLockFlag){
+                if(!lockAppSet.isEmpty()){
+                    isMonitorStarted = true;
+                    Log.e(LOG_TAG, "monitor started");
+                    stop = false;
+                    while(!stop) {
+                        try{
+                            ActivityManager.RunningTaskInfo taskInfo = ActivityUtil.getForegroundActivity(mContext);
+                            if(!taskInfo.topActivity.getPackageName().equals("com.lvyingbin.fastencryption")){
+                                if(lockAppSet.contains(taskInfo.topActivity.getPackageName())){
+                                    Log.e(LOG_TAG,"bingo");
+                                    if(!appHit.equals(taskInfo.topActivity.getPackageName())){
+                                        Log.e(LOG_TAG,"appHit"+appHit);
+                                        appHit = taskInfo.topActivity.getPackageName();
+                                        Intent intent = new Intent(mContext,LockScreenActivity.class);
+                                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                        intent.putExtra("activityGoal","unlock app");
+                                        startActivity(intent);
+                                    }
+                                }else{
+                                    appHit = "";
+                                }
+                            }
+                            Log.e(LOG_TAG,taskInfo.topActivity.getPackageName());
+                            Thread.sleep(2000);
+                        }catch (Exception e) {
+                            Log.e(LOG_TAG, "Exception : " + e);
+                        }
+                    }
+                    Log.e(LOG_TAG, "monitor stopped");
+                    isMonitorStarted = false;
+                }
             }
         }
     }

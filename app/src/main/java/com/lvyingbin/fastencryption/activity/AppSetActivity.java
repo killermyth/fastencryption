@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -19,6 +20,7 @@ import android.content.pm.ResolveInfo;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.AsyncTask;
 import android.os.IBinder;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
@@ -43,6 +45,7 @@ import com.lvyingbin.fastencryption.R;
 import com.lvyingbin.fastencryption.model.AppInfo;
 import com.lvyingbin.fastencryption.service.MonitorService;
 import com.lvyingbin.fastencryption.util.AccessToken;
+import com.lvyingbin.fastencryption.util.ActivityUtil;
 import com.lvyingbin.fastencryption.util.BrowseApplicationInfoAdapter;
 
 
@@ -250,7 +253,7 @@ public class AppSetActivity extends ActionBarActivity implements ActionBar.TabLi
         @Override
         public void onAttach(Activity activity) {
             super.onAttach(activity);
-            mContext = activity.getApplicationContext();
+            mContext = activity;
             accessToken = new AccessToken(mContext);
         }
 
@@ -275,56 +278,55 @@ public class AppSetActivity extends ActionBarActivity implements ActionBar.TabLi
             View rootView = inflater.inflate(R.layout.fragment_app_set, container, false);
             appListView = (ListView) rootView.findViewById(R.id.appListView);
             getApp();
-            if ((ARG_SECTION_NUMBER!= null) && (getArguments().getInt(ARG_SECTION_NUMBER) == 1) ){
-                browseAppAdapter = new BrowseApplicationInfoAdapter(mContext, userAppList);
-                appListView.setAdapter(browseAppAdapter);
-            }else if((ARG_SECTION_NUMBER!= null) && (getArguments().getInt(ARG_SECTION_NUMBER) == 2) ){
-                browseAppAdapter = new BrowseApplicationInfoAdapter(mContext, sysAppList);
-                appListView.setAdapter(browseAppAdapter);
-            }
             return rootView;
         }
 
         //准备列表中所需数据
         private void getApp() {
-            PackageManager packageManager = mContext.getPackageManager();
-//            List<ApplicationInfo> packages = packageManager.getInstalledApplications(PackageManager.GET_META_DATA);
-//            Collections.sort(packages, new ApplicationInfo.DisplayNameComparator(packageManager));
-//            for (ApplicationInfo packageInfo : packages) {
-//                String pkgName = packageInfo.packageName;
-//                String appLabel = (String) packageInfo.loadLabel(packageManager);
-//                Drawable appIcon = packageInfo.loadIcon(packageManager);
-//                Boolean lock = false;
-//                AppInfo appInfo = new AppInfo(pkgName,appLabel,appIcon,lock);
-//                Log.e(TAG,appLabel);
-////                Log.e(TAG, "" + packageManager.getApplicationIcon(packageInfo));
-////                map.put("appLabel", packageManager.getApplicationLabel(packageInfo));
-//                if(isSystemPackage(packageInfo)){
-//                        sysAppList.add(appInfo);
-//                }else{
-//                    userAppList.add(appInfo);
-//                }
-//            }
-            Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
-            mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-            List<ResolveInfo> resolveInfo = packageManager.queryIntentActivities(mainIntent, 0);
-            Collections.sort(resolveInfo,new ResolveInfo.DisplayNameComparator(packageManager));
-            Set<String> lockAppSet = accessToken.getStrSetSharedPreferences("lockApp");
-            for (ResolveInfo reInfo : resolveInfo){
-                String pkgName = reInfo.activityInfo.packageName;
-                String appLabel = (String) reInfo.loadLabel(packageManager);
-                Drawable appIcon = reInfo.loadIcon(packageManager);
-                Boolean lock = false;
-                if(lockAppSet.contains(pkgName)){
-                    lock = true;
+            AsyncTask<Void, Void, Void> taskShowApp = new AsyncTask<Void, Void, Void>(){
+                ProgressDialog progressDialog;
+                @Override
+                protected void onPreExecute(){
+                    progressDialog = ActivityUtil.showProgressDialog(mContext,"提示", "正在加载......");
                 }
-                AppInfo appInfo = new AppInfo(pkgName,appLabel,appIcon,lock);
-                if(isSystemPackage(reInfo)){
-                    sysAppList.add(appInfo);
-                }else{
-                    userAppList.add(appInfo);
+                @Override
+                protected Void doInBackground(Void... params) {
+                    PackageManager packageManager = mContext.getPackageManager();
+                    Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
+                    mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+                    List<ResolveInfo> resolveInfo = packageManager.queryIntentActivities(mainIntent, 0);
+                    Collections.sort(resolveInfo,new ResolveInfo.DisplayNameComparator(packageManager));
+                    Set<String> lockAppSet = accessToken.getStrSetSharedPreferences("lockApp");
+                    for (ResolveInfo reInfo : resolveInfo){
+                        String pkgName = reInfo.activityInfo.packageName;
+                        String appLabel = (String) reInfo.loadLabel(packageManager);
+                        Drawable appIcon = reInfo.loadIcon(packageManager);
+                        Boolean lock = false;
+                        if(lockAppSet.contains(pkgName)){
+                            lock = true;
+                        }
+                        AppInfo appInfo = new AppInfo(pkgName,appLabel,appIcon,lock);
+                        if(isSystemPackage(reInfo)){
+                            sysAppList.add(appInfo);
+                        }else{
+                            userAppList.add(appInfo);
+                        }
+                    }
+                    return null;
                 }
-            }
+                @Override
+                protected void onPostExecute(Void params) {
+                    ActivityUtil.hideProgressDialog(progressDialog);
+                    if ((ARG_SECTION_NUMBER!= null) && (getArguments().getInt(ARG_SECTION_NUMBER) == 1) ){
+                        browseAppAdapter = new BrowseApplicationInfoAdapter(mContext, userAppList);
+                        appListView.setAdapter(browseAppAdapter);
+                    }else if((ARG_SECTION_NUMBER!= null) && (getArguments().getInt(ARG_SECTION_NUMBER) == 2) ){
+                        browseAppAdapter = new BrowseApplicationInfoAdapter(mContext, sysAppList);
+                        appListView.setAdapter(browseAppAdapter);
+                    }
+                }
+            };
+            taskShowApp.execute();
         }
         //判断应用程序是否为系统自带
         private boolean isSystemPackage(ResolveInfo resolveInfo) {

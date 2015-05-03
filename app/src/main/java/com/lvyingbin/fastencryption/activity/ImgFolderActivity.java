@@ -1,6 +1,7 @@
 package com.lvyingbin.fastencryption.activity;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -16,6 +17,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.lvyingbin.fastencryption.R;
+import com.lvyingbin.fastencryption.util.ActivityUtil;
 import com.lvyingbin.fastencryption.util.ImgDisplayUtil;
 import com.lvyingbin.fastencryption.util.ImgFolderInfoAdapter;
 
@@ -40,9 +42,10 @@ public class ImgFolderActivity extends ActionBarActivity {
 
     public void showImgFolder(){
         AsyncTask<Void, Void, ArrayList<Bundle>> taskShowImgFolder = new AsyncTask<Void, Void, ArrayList<Bundle>>(){
+            ProgressDialog progressDialog;
             @Override
             protected void onPreExecute(){
-//                ImgDisplayUtil.allScan(mContext);
+                progressDialog = ActivityUtil.showProgressDialog(mContext, "提示", "正在加载......");
             }
 
             @Override
@@ -52,6 +55,7 @@ public class ImgFolderActivity extends ActionBarActivity {
                 if ((localCursor != null)&&(localCursor.getCount()>0)){
                     HashMap localHashMap = new HashMap();
                     HashSet localHashSet = new HashSet();
+                    Log.e(TAG,"start find img floder");
                     while(localCursor.moveToNext()){
                         String str1,str2,str3;
                         int i1 = localCursor.getColumnIndex("bucket_id");
@@ -79,6 +83,7 @@ public class ImgFolderActivity extends ActionBarActivity {
                             }
                         }
                     }
+                    Log.e(TAG,"end find img floder");
                     localArrayList.addAll(localHashMap.values());
                     localCursor.close();
                 }
@@ -87,6 +92,7 @@ public class ImgFolderActivity extends ActionBarActivity {
 
             @Override
             protected void onPostExecute(ArrayList<Bundle> result) {
+                ActivityUtil.hideProgressDialog(progressDialog);
                 ImgFolderInfoAdapter adapter = new ImgFolderInfoAdapter(mContext,result);
                 listview.setAdapter(adapter);
                 final ArrayList<Bundle> finalBundle = result;
